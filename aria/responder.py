@@ -3,14 +3,15 @@ import openai
 
 client = openai.OpenAI()
 
-MAX_OUTPUT_TOKENS = 1000  # FIX: cap output tokens to prevent runaway generation
+MAX_COMPLETION_TOKENS = 1000  # FIX: cap output tokens to prevent runaway generation
 
 
 def get_response(prompt: str) -> str:
-    """Call responses.create with max_output_tokens cap."""
+    """Call responses.create with reasoning_effort and output token cap."""
     response = client.responses.create(
         model="o3",
         input=prompt,
-        max_output_tokens=MAX_OUTPUT_TOKENS  # FIX: added cap
+        reasoning_effort="medium",             # FIX: added reasoning effort budget
+        max_completion_tokens=MAX_COMPLETION_TOKENS  # FIX: added output cap
     )
     return response.output_text

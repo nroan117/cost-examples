@@ -1,0 +1,19 @@
+name: Cost Regression Check
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  cost:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nroan117/cost@v0.1.0
+        with:
+          org_api_key: ${{ secrets.COST_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          enforcement_mode: warn-only

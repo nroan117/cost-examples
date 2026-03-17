@@ -1,0 +1,32 @@
+rules:
+  - id: cache-prefix-invalidation
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern: f"{datetime.$F(...)}..."
+              - pattern-inside: |
+                  {"role": "system", "content": f"{datetime.$F(...)}..."}
+          - patterns:
+              - pattern: f"{uuid.$F(...)}..."
+              - pattern-inside: |
+                  {"role": "system", "content": f"{uuid.$F(...)}..."}
+          - patterns:
+              - pattern: f"{time.time(...)}..."
+              - pattern-inside: |
+                  {"role": "system", "content": f"{time.time(...)}..."}
+          - patterns:
+              - pattern: f"{random.$F(...)}..."
+              - pattern-inside: |
+                  {"role": "system", "content": f"{random.$F(...)}..."}
+    message: >
+      A volatile expression (datetime, uuid, time, random) appears at the start of a system
+      message content. This busts the KV cache prefix on every request, causing full
+      re-tokenisation of the static system prompt. Move volatile values to the user message
+      turn, or append them after the static system prompt (not before).
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: context_window
+      severity: medium
+      confidence: medium
+      enforcement: warn

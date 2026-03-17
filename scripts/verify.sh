@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# verify.sh — validate all 15 semgrep rules against should_trigger / should_not_trigger test fixtures.
+# verify.sh — validate all 16 semgrep rules against should_trigger / should_not_trigger test fixtures.
 #
 # Usage:
 #   bash scripts/verify.sh [RULES_DIR]
@@ -42,6 +42,7 @@ RULES=(
   "missing-output-caps-responses"
   "video-token-explosion"
   "file-chunk-read-loop"
+  "cache-prefix-invalidation"
 )
 
 echo ""

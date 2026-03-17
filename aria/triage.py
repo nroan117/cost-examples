@@ -3,8 +3,7 @@ Aria ticket triage agent.
 
 Uses the o3-mini reasoning model to classify incoming support tickets
 and determine routing priority.
-VULNERABILITY: reasoning-threshold-breach — reasoning_effort="high" hardcoded,
-making every routine triage call maximally expensive.
+FIX: reasoning_effort changed from "high" to "medium" — appropriate for routine triage.
 """
 import logging
 from openai import OpenAI
@@ -24,9 +23,8 @@ def triage_ticket(ticket: dict) -> dict:
     """
     Classify a support ticket using the o3-mini reasoning model.
 
-    BUG: reasoning_effort="high" is hardcoded for all tickets, including trivial ones
-    like password resets. This should be "low" or "medium" for triage tasks,
-    reserving "high" only for complex escalations.
+    FIX: reasoning_effort="medium" is sufficient for triage tasks.
+    "high" is reserved for complex escalations only.
     """
     response = client.responses.create(
         model="o3-mini",
@@ -34,7 +32,7 @@ def triage_ticket(ticket: dict) -> dict:
             {"role": "system", "content": TRIAGE_PROMPT},
             {"role": "user", "content": ticket["description"]},
         ],
-        reasoning_effort="high",
+        reasoning_effort="medium",
         max_completion_tokens=2000,
     )
 

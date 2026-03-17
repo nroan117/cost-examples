@@ -3,8 +3,7 @@ Aria structured field extractor.
 
 Extracts structured JSON fields from unstructured support ticket descriptions
 using an LLM with retry logic for malformed outputs.
-VULNERABILITY: unstructured-response-retries — while True retry loop with
-json.JSONDecodeError catch and no maximum retry counter.
+FIX: Bounded for loop (range(MAX_RETRIES)) replaces while True.
 """
 import json
 import logging
@@ -12,6 +11,8 @@ from openai import OpenAI
 
 client = OpenAI()
 logger = logging.getLogger(__name__)
+
+MAX_RETRIES = 3
 
 EXTRACTION_PROMPT = """Extract the following fields from the support ticket as valid JSON:
 {
@@ -27,11 +28,11 @@ def extract_ticket_fields(description: str) -> dict:
     """
     Extract structured fields from a ticket description.
 
-    BUG: The retry loop has no maximum attempt counter. If the model consistently
-    returns malformed JSON (e.g., due to a bad prompt or model quirk), this will
-    loop and bill indefinitely.
+    FIX: for attempt in range(MAX_RETRIES) caps retries at 3, preventing
+    an indefinite loop when the model returns bad JSON.
     """
-    while True:
+    last_error: Exception | None = None
+    for attempt in range(MAX_RETRIES):
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -41,10 +42,9 @@ def extract_ticket_fields(description: str) -> dict:
             max_tokens=200,
         )
         try:
-            result = json.loads(response.choices[0].message.content)
-            break
-        except json.JSONDecodeError:
-            logger.warning("Malformed JSON response, retrying...")
-            continue
+            return json.loads(response.choices[0].message.content)
+        except json.JSONDecodeError as exc:
+            logger.warning("Attempt %d/%d: malformed JSON", attempt + 1, MAX_RETRIES)
+            last_error = exc
 
-    return result
+    raise ValueError(f"Could not extract JSON after {MAX_RETRIES} attempts") from last_error

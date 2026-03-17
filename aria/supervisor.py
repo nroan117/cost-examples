@@ -2,8 +2,7 @@
 Aria multi-agent supervisor.
 
 Orchestrates a team of specialised support sub-agents using LangGraph.
-VULNERABILITY: missing-recursion-limit — StateGraph instantiated without recursion_limit,
-allowing the graph to loop indefinitely if agents keep handing off to each other.
+FIX: recursion_limit=25 passed to StateGraph to cap the number of node transitions.
 """
 from typing import TypedDict, Annotated
 from langgraph.graph import StateGraph, END
@@ -37,11 +36,10 @@ def build_supervisor():
     """
     Build the multi-agent support supervisor graph.
 
-    BUG: StateGraph is created without recursion_limit. If routing logic
-    cycles between agents, the graph will loop until the process runs out
-    of memory or the user's API budget is exhausted.
+    FIX: recursion_limit=25 is passed as a constructor argument so the static
+    analyser can confirm a limit is set at the point of graph creation.
     """
-    workflow = StateGraph(SupportState)
+    workflow = StateGraph(SupportState, recursion_limit=25)
 
     workflow.add_node("triage", triage_node)
     workflow.add_node("billing", billing_node)

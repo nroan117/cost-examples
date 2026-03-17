@@ -2,25 +2,25 @@
 Aria RAG-based knowledge base search.
 
 Retrieves relevant support documents using vector similarity search.
-VULNERABILITY: top-k-distance-breach — top_k=200 far exceeds recommended maximum.
+FIX: top_k reduced to 10 (well within the recommended maximum).
 """
 import chromadb
 
 _chroma_client = chromadb.Client()
 collection = _chroma_client.get_collection("support_docs")
 
+TOP_K_MAX = 10  # Controlled constant; update via manifest if needed.
+
 
 def search_knowledge_base(query: str) -> list[dict]:
     """
     Search the support knowledge base for documents relevant to a query.
 
-    BUG: top_k=200 retrieves an enormous context window worth of documents.
-    This inflates the number of tokens sent to the LLM and increases cost
-    proportionally. Recommended maximum is 20.
+    FIX: top_k=TOP_K_MAX (10) fetches a manageable context slice.
     """
     results = collection.query(
         query_texts=[query],
-        top_k=200,
+        top_k=TOP_K_MAX,
     )
 
     documents = []

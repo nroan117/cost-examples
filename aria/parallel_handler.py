@@ -2,8 +2,7 @@
 Aria parallel ticket batch processor.
 
 Processes a batch of incoming support tickets concurrently for throughput.
-VULNERABILITY: parallel-tool-call-explosion — asyncio.gather over an unbounded
-list comprehension of .create() calls with no semaphore to cap concurrency.
+FIX: asyncio.Semaphore(5) limits concurrent LLM calls to prevent cost spikes.
 """
 import asyncio
 import logging
@@ -13,28 +12,32 @@ client = AsyncOpenAI()
 logger = logging.getLogger(__name__)
 
 BATCH_PROMPT = """You are a support agent. Provide a brief resolution for this ticket."""
+MAX_CONCURRENCY = 5
 
 
 async def process_ticket_batch(tickets: list) -> list[str]:
     """
-    Process a batch of support tickets in parallel.
+    Process a batch of support tickets in parallel with bounded concurrency.
 
-    BUG: Every ticket spawns an independent LLM call with no concurrency cap.
-    A batch of 500 tickets fires 500 simultaneous API requests, blowing through
-    rate limits and generating an enormous parallel cost spike.
+    FIX: Semaphore(5) ensures at most 5 concurrent API calls, preventing
+    rate limit breaches and unexpected cost spikes on large batches.
     """
-    tasks = [
-        client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": BATCH_PROMPT},
-                {"role": "user", "content": ticket["description"]},
-            ],
-            max_tokens=300,
-        )
-        for ticket in tickets
-    ]
-    await asyncio.gather(*tasks)
+    semaphore = asyncio.Semaphore(MAX_CONCURRENCY)
+
+    async def bounded_call(ticket: dict) -> str:
+        async with semaphore:
+            response = await client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": BATCH_PROMPT},
+                    {"role": "user", "content": ticket["description"]},
+                ],
+                max_tokens=300,
+            )
+            return response.choices[0].message.content
+
+    tasks = [bounded_call(ticket) for ticket in tickets]
+    results = await asyncio.gather(*tasks)
 
     logger.info("Processed batch of %d tickets", len(tickets))
-    return [t["id"] for t in tickets]
+    return list(results)

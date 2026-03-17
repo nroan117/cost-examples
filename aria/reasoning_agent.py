@@ -3,8 +3,7 @@ Aria escalation agent for complex support tickets.
 
 Uses OpenAI o3 reasoning model to analyze difficult cases that tier-1 agents
 could not resolve.
-VULNERABILITY: missing-reasoning-parameters — responses.create called without
-reasoning_effort or max_completion_tokens.
+FIX: reasoning_effort="medium" and max_completion_tokens=4000 added.
 """
 import logging
 from openai import OpenAI
@@ -21,9 +20,8 @@ def escalate_complex_ticket(ticket: dict) -> dict:
     """
     Escalate a complex support ticket to the o3 reasoning model.
 
-    BUG: missing reasoning_effort and max_completion_tokens — the reasoning model
-    will use its default (maximum) thinking budget, generating unbounded thinking
-    tokens on every escalation even for straightforward cases.
+    FIX: reasoning_effort="medium" is appropriate for most escalations.
+    max_completion_tokens=4000 caps the thinking budget.
     """
     history_text = "\n".join(
         f"[{m['role']}]: {m['content']}" for m in ticket.get("history", [])
@@ -38,6 +36,8 @@ def escalate_complex_ticket(ticket: dict) -> dict:
                 "content": f"Ticket #{ticket['id']}\n\nHistory:\n{history_text}\n\nLatest: {ticket['description']}",
             },
         ],
+        reasoning_effort="medium",
+        max_completion_tokens=4000,
     )
 
     logger.info("Escalation resolved for ticket %s", ticket["id"])

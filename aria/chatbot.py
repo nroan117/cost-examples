@@ -2,7 +2,7 @@
 Aria customer support chatbot.
 
 Handles incoming support queries with conversational context.
-VULNERABILITY: missing-output-caps — completions.create called without max_tokens.
+FIX: Added max_tokens=500 to cap response length and control costs.
 """
 from openai import OpenAI
 
@@ -20,12 +20,12 @@ def handle_support_query(user_message: str, conversation_history: list) -> str:
         {"role": "user", "content": user_message},
     ]
 
-    # BUG: missing max_tokens — the model can generate an arbitrarily long response,
-    # causing unbounded token costs on every support interaction.
+    # FIX: max_tokens=500 caps response length to a reasonable limit.
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=messages,
         temperature=0.7,
+        max_tokens=500,
     )
 
     return response.choices[0].message.content

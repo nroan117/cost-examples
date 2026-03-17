@@ -3,10 +3,11 @@ rules:
     patterns:
       - pattern: $X.responses.create(...)
       - pattern-not: $X.responses.create(..., max_output_tokens=..., ...)
+      - pattern-not: $X.responses.create(..., max_completion_tokens=..., ...)
     message: >
-      OpenAI Responses API call is missing max_output_tokens. Without this cap, models like o3
-      may generate extremely long responses at high cost. Add max_output_tokens=<limit> to all
-      responses.create() calls.
+      OpenAI Responses API call is missing max_output_tokens or max_completion_tokens.
+      Without this cap, models like o3 may generate extremely long responses at high cost.
+      Add max_output_tokens=<limit> or max_completion_tokens=<limit> to all responses.create() calls.
     severity: ERROR
     languages: [python]
     metadata:

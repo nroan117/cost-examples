@@ -27,4 +27,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           enforcement_mode: warn-only
         env:
-          COST_API_BASE: https://cost-api-706230423289.us-central1.run.app
+          COST_API_BASE: https://cost-api-706230423289.us-central1.run.app/v1/rules

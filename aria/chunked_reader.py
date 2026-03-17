@@ -1,21 +1,20 @@
-"""Chunked reader — file-chunk-read-loop vulnerability."""
+"""Chunked reader — file-chunk-read-loop FIXED."""
 import openai
 
 client = openai.OpenAI()
 
+MAX_CONTENT_CHARS = 8000
 
-def process_file_in_chunks(filepath: str) -> list:
-    """Read file in tiny chunks and call LLM per chunk — bad pattern."""
-    results = []
+
+def process_file(filepath: str) -> str:
+    """FIX: read full file then make a single API call instead of per-chunk calls."""
     with open(filepath) as f:
-        while True:
-            chunk = f.read(1024)
-            if not chunk:
-                break
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[{"role": "user", "content": chunk}],
-                max_tokens=100
-            )
-            results.append(response.choices[0].message.content)
-    return results
+        content = f.read()
+
+    # Single API call for the full content (truncated)
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": content[:MAX_CONTENT_CHARS]}],
+        max_tokens=500
+    )
+    return response.choices[0].message.content

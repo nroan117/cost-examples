@@ -1,0 +1,20 @@
+rules:
+  - id: tool-schema-per-call
+    patterns:
+      - pattern: |
+          def $FUNC(...):
+              ...
+              $TOOLS = [{"type": "function", "function": {...}}, ...]
+              ...
+              $CLIENT.chat.completions.create(..., tools=$TOOLS, ...)
+    message: >
+      Tool/function schemas are defined inside a function body and re-transmitted on every API call.
+      Define tool schemas as module-level constants (e.g. TOOLS = [...]) to avoid redundant token
+      transmission and reduce costs.
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: context_window
+      severity: medium
+      confidence: medium
+      enforcement: warn

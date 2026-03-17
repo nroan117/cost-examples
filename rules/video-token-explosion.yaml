@@ -1,0 +1,28 @@
+rules:
+  - id: video-token-explosion
+    patterns:
+      - pattern: |
+          with open($VIDEO, "rb") as $F:
+              $DATA = $F.read()
+          ...
+          $CLIENT.chat.completions.create(
+              ...,
+              messages=[..., {"role": ..., "content": [..., {"type": "video", ...}, ...]}, ...],
+              ...
+          )
+      - pattern-not-inside: |
+          extract_frames(...)
+          ...
+      - pattern-not-inside: |
+          $FRAMES = extract_frames(...)
+    message: >
+      Video file is read and passed directly to a multimodal API without frame sampling.
+      Full video files can generate millions of tokens. Use frame sampling instead
+      (e.g. frames = extract_frames(video_path, max_frames=10)).
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: multimodal
+      severity: high
+      confidence: medium
+      enforcement: warn

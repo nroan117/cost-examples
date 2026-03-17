@@ -1,0 +1,26 @@
+rules:
+  - id: image-resize-missing
+    patterns:
+      - pattern: |
+          $CLIENT.chat.completions.create(
+              ...,
+              messages=[..., {"role": ..., "content": [..., {"type": "image_url", ...}, ...]}, ...],
+              ...
+          )
+      - pattern-not-inside: |
+          $IMG.resize(...)
+          ...
+      - pattern-not-inside: |
+          $IMG.thumbnail(...)
+          ...
+    message: >
+      Vision API call passes an image URL without a preceding resize or thumbnail operation.
+      High-resolution images can consume thousands of tokens per image. Resize images before
+      sending to the API (e.g. img.resize((512, 512)) or img.thumbnail((800, 800))).
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: multimodal
+      severity: medium
+      confidence: medium
+      enforcement: warn

@@ -1,0 +1,19 @@
+rules:
+  - id: file-chunk-read-loop
+    patterns:
+      - pattern: |
+          while ...:
+              $CHUNK = $F.read($SIZE)
+              ...
+              $CLIENT.chat.completions.create(...)
+    message: >
+      LLM API call inside a file chunk-read loop makes one API call per small chunk.
+      This causes excessive API calls and token overhead. Read the full file first, then
+      make a single API call (content = f.read(); client.chat.completions.create(...)).
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: core_compute
+      severity: high
+      confidence: medium
+      enforcement: block

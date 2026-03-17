@@ -1,8 +1,8 @@
 name: Cost Regression Check
-
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   cost:
@@ -13,10 +13,54 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: nroan117/cost@v0.1.0
-        with:
-          org_api_key: ${{ secrets.COST_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          enforcement_mode: enforce-on-critical
+      - name: Install semgrep
+        run: pip install semgrep --quiet
+
+      - name: Fetch rule manifest from CostGuard backend
         env:
+          COST_API_KEY: ${{ secrets.COST_API_KEY }}
           COST_API_BASE: https://cost-api-706230423289.us-central1.run.app
+        run: |
+          curl -sf \
+            -H "X-Org-Api-Key: $COST_API_KEY" \
+            "$COST_API_BASE/v1/rules/manifest" \
+            -o /tmp/manifest.json
+          python3 -c "
+          import json
+          with open('/tmp/manifest.json') as f:
+              m = json.load(f)
+          with open('/tmp/semgrep_rules.yml', 'w') as f:
+              f.write(m['semgrep_config_yaml'])
+          rules = [r['id'] for r in m['semgrep_rules']]
+          print(f'Fetched {len(rules)} rules from backend: {rules}')
+          "
+
+      - name: Run semgrep cost regression scan
+        run: |
+          semgrep \
+            --config /tmp/semgrep_rules.yml \
+            --sarif \
+            --output /tmp/results.sarif \
+            . \
+            --exclude=tests/ \
+            --exclude=scripts/ \
+            || true
+          python3 -c "
+          import json
+          with open('/tmp/results.sarif') as f:
+              sarif = json.load(f)
+          findings = sarif.get('runs', [{}])[0].get('results', [])
+          print(f'Total findings: {len(findings)}')
+          for r in findings:
+              rule_id = r.get('ruleId','?')
+              loc = r.get('locations',[{}])[0].get('physicalLocation',{}).get('artifactLocation',{}).get('uri','?')
+              line = r.get('locations',[{}])[0].get('physicalLocation',{}).get('region',{}).get('startLine','?')
+              print(f'  [{rule_id}] {loc}:{line}')
+          "
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: /tmp/results.sarif
+          category: costguard
+        if: always()

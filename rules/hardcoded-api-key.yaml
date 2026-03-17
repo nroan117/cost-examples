@@ -1,0 +1,14 @@
+rules:
+  - id: hardcoded-api-key
+    patterns:
+      - pattern: $FUNC(api_key=$KEY)
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: '"sk-[^"]*"'
+    message: "Hardcoded LLM API key: api_key is set to a string literal starting with 'sk-'. Store secrets in environment variables (os.environ or os.getenv) or a secrets manager instead."
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: security
+      severity: critical
+      confidence: high

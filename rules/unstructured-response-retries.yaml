@@ -1,0 +1,18 @@
+rules:
+  - id: unstructured-response-retries
+    pattern: |
+      while True:
+          ...
+          $CLIENT.create(...)
+          ...
+          try:
+              ...
+          except json.JSONDecodeError:
+              ...
+    message: "Unbounded JSON-retry loop: while True with .create() and json.JSONDecodeError catch but no retry counter. Replace with a bounded for loop (e.g. for attempt in range(MAX_RETRIES)) to prevent runaway LLM costs."
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: cost_regression
+      severity: high
+      confidence: medium

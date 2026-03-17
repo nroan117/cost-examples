@@ -1,0 +1,13 @@
+rules:
+  - id: missing-reasoning-parameters
+    patterns:
+      - pattern: $X.responses.create(...)
+      - pattern-not: $X.responses.create(..., max_completion_tokens=..., ...)
+      - pattern-not: $X.responses.create(..., reasoning_effort=..., ...)
+    message: Reasoning model SDK call missing max_completion_tokens or reasoning_effort kwargs.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: test_time_compute
+      severity: high
+      confidence: high

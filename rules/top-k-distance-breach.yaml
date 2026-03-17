@@ -1,0 +1,14 @@
+rules:
+  - id: top-k-distance-breach
+    patterns:
+      - pattern: $X(..., top_k=$N, ...)
+      - metavariable-regex:
+          metavariable: $N
+          regex: "^(0|[1-9][0-9]*)$"
+    message: Vector query uses literal top_k; must not exceed thresholds.top_k_max.
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: rag_retrieval
+      severity: medium
+      confidence: medium

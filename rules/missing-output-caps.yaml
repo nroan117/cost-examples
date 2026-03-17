@@ -1,0 +1,14 @@
+rules:
+  - id: missing-output-caps
+    patterns:
+      - pattern: $X.completions.create(...)
+      - pattern-not: $X.completions.create(..., max_tokens=..., ...)
+      - pattern-not: $X.completions.create(..., max_output_tokens=..., ...)
+      - pattern-not: $X.completions.create(..., max_completion_tokens=..., ...)
+    message: SDK generation call missing max_tokens, max_output_tokens, or max_completion_tokens.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: core_compute
+      severity: high
+      confidence: high

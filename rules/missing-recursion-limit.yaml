@@ -1,0 +1,17 @@
+rules:
+  - id: missing-recursion-limit
+    patterns:
+      - pattern-either:
+          - pattern: $X.StateGraph(...)
+          - pattern: $X.ConversableAgent(...)
+      - pattern-not: $X.StateGraph(..., recursion_limit=..., ...)
+      - pattern-not: $X.StateGraph(recursion_limit=..., ...)
+      - pattern-not: $X.ConversableAgent(..., max_consecutive_auto_reply=..., ...)
+      - pattern-not: $X.ConversableAgent(max_consecutive_auto_reply=..., ...)
+    message: Langgraph/autogen instantiation missing recursion_limit or max_consecutive_auto_reply.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: agentic_execution
+      severity: high
+      confidence: high

@@ -1,0 +1,14 @@
+rules:
+  - id: parallel-tool-call-explosion
+    patterns:
+      - pattern: |
+          $TASKS = [$CLIENT.create(...) for $ITEM in $ITEMS]
+          ...
+          await asyncio.gather(*$TASKS)
+    message: "Parallel LLM call explosion: asyncio.gather() with an unbounded list comprehension of .create() calls. Add asyncio.Semaphore to cap concurrency and control costs."
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: agentic_execution
+      severity: high
+      confidence: medium

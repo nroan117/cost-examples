@@ -1,0 +1,3 @@
+# Allow everything in this repo — we want semgrep to scan all files
+# including tests/should_trigger and tests/should_not_trigger.
+# No patterns here means nothing is ignored beyond git-tracked defaults.

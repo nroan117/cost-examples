@@ -1,0 +1,12 @@
+rules:
+  - id: reasoning-threshold-breach
+    pattern-either:
+      - pattern: $X(..., reasoning_effort="high", ...)
+      - pattern: $X(..., reasoning_effort="maximum", ...)
+    message: Literal max-level reasoning_effort setting.
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: test_time_compute
+      severity: high
+      confidence: high

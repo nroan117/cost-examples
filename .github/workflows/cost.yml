@@ -3,6 +3,7 @@ name: Cost Regression Check
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   cost:

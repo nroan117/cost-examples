@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# verify.sh — validate all 9 semgrep rules against should_trigger / should_not_trigger test fixtures.
+# verify.sh — validate all 15 semgrep rules against should_trigger / should_not_trigger test fixtures.
 #
 # Usage:
 #   bash scripts/verify.sh [RULES_DIR]
@@ -36,6 +36,12 @@ RULES=(
   "top-k-distance-breach"
   "unbounded-raw-loop"
   "unstructured-response-retries"
+  "context-dump-to-prompt"
+  "tool-schema-per-call"
+  "image-resize-missing"
+  "missing-output-caps-responses"
+  "video-token-explosion"
+  "file-chunk-read-loop"
 )
 
 echo ""

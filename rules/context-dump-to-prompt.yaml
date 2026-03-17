@@ -1,0 +1,24 @@
+rules:
+  - id: context-dump-to-prompt
+    patterns:
+      - pattern: |
+          with open(...) as $F:
+              $CONTENT = $F.read()
+          ...
+          $MSGS = [..., {"role": ..., "content": $CONTENT, ...}, ...]
+          ...
+          $CLIENT.chat.completions.create(..., messages=$MSGS, ...)
+      - pattern-not: |
+          with open(...) as $F:
+              $CONTENT = $F.read()[...]
+    message: >
+      File contents read with f.read() are passed directly into an LLM messages array without
+      truncation. This can cause unbounded context window consumption and high token costs.
+      Truncate or summarize the content before passing it to the API (e.g. content[:2000]).
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: context_window
+      severity: high
+      confidence: medium
+      enforcement: warn

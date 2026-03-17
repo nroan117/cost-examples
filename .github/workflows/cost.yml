@@ -5,7 +5,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  cost:
+  # enforce-on-critical: blocks on rules with enforcement=block (hardcoded keys,
+  # missing caps, recursion limits, runaway loops, parallel explosions).
+  # warn-only rules (top-k, reasoning threshold, retry storms) are annotations only.
+  cost-enforce:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -21,11 +24,12 @@ jobs:
           token: ${{ secrets.COST_REPO_TOKEN }}
           path: .cost-action
 
-      - uses: ./.cost-action/action
+      - name: Run CostGuard (enforce-on-critical)
+        uses: ./.cost-action/action
         with:
           org_api_key: ${{ secrets.COST_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          enforcement_mode: warn-only
-          exclude_paths: tests scripts .cost-action
+          enforcement_mode: enforce-on-critical
+          exclude_paths: tests scripts
         env:
           COST_API_BASE: https://cost-api-706230423289.us-central1.run.app/v1/rules

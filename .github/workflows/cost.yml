@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Job 1: Scan the real Aria app — enforce on critical rules
   cost-enforce:
     runs-on: ubuntu-latest
     permissions:
@@ -29,10 +30,76 @@ jobs:
           token: ${{ secrets.COST_REPO_TOKEN }}
           path: .cost-action
 
-      - name: Run CostGuard (enforce-on-critical)
+      - name: Run CostGuard on Aria app
         uses: ./.cost-action/action
         with:
           org_api_key: ${{ secrets.COST_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           enforcement_mode: enforce-on-critical
           exclude_paths: tests scripts
+
+  # Job 2: All 16 rules must FIRE on bad fixtures (trigger validation)
+  validate-triggers:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.COST_REPO_TOKEN }}
+
+      - name: Checkout cost action
+        uses: actions/checkout@v4
+        with:
+          repository: nroan117/cost
+          ref: v0.3.0
+          token: ${{ secrets.COST_REPO_TOKEN }}
+          path: .cost-action
+
+      - name: Run CostGuard on should_trigger fixtures (warn-only — findings expected)
+        uses: ./.cost-action/action
+        with:
+          org_api_key: ${{ secrets.COST_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          enforcement_mode: warn-only
+          include_paths: tests/should_trigger
+
+  # Job 3: Zero findings on clean fixtures (false-positive validation)
+  validate-clean:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.COST_REPO_TOKEN }}
+
+      - name: Checkout cost action
+        uses: actions/checkout@v4
+        with:
+          repository: nroan117/cost
+          ref: v0.3.0
+          token: ${{ secrets.COST_REPO_TOKEN }}
+          path: .cost-action
+
+      - name: Run CostGuard on should_not_trigger fixtures (zero findings expected)
+        uses: ./.cost-action/action
+        with:
+          org_api_key: ${{ secrets.COST_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          enforcement_mode: enforce-on-critical
+          include_paths: tests/should_not_trigger

@@ -5,9 +5,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  # enforce-on-critical: blocks on rules with enforcement=block (hardcoded keys,
-  # missing caps, recursion limits, runaway loops, parallel explosions).
-  # warn-only rules (top-k, reasoning threshold, retry storms) are annotations only.
   cost-enforce:
     runs-on: ubuntu-latest
     permissions:
@@ -20,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: nroan117/cost
-          ref: v0.1.0
+          ref: v0.3.0
           token: ${{ secrets.COST_REPO_TOKEN }}
           path: .cost-action
 
@@ -31,5 +28,3 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           enforcement_mode: enforce-on-critical
           exclude_paths: tests scripts
-        env:
-          COST_API_BASE: https://cost-api-706230423289.us-central1.run.app/v1/rules

@@ -61,12 +61,7 @@ jobs:
           MOCK_LLM_URL: http://localhost:8080
           SARIF_OUTPUT: behavioral-findings.sarif
         run: |
-          # Grab the behavioral-report.py from the cost repo mock-server.
-          # In practice teams would pin to a released version; here we fetch main.
-          curl -sSL \
-            https://raw.githubusercontent.com/nroan117/cost/main/mock-server/behavioral-report.py \
-            -o behavioral-report.py
-          python3 behavioral-report.py
+          python3 tests/behavioral/behavioral-report.py
         continue-on-error: true   # we assert findings below; don't hard-fail here
 
       - name: Upload SARIF to GitHub Code Scanning

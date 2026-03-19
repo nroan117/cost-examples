@@ -1,0 +1,107 @@
+name: Behavioral Cost Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  behavioral-check:
+    name: Run behavioral LLM cost regression analysis
+    runs-on: ubuntu-latest
+
+    services:
+      cost-mock-llm:
+        image: ghcr.io/nroan117/cost-mock-llm:v0.1.0
+        ports:
+          - 8080:8080
+        options: >-
+          --health-cmd "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:8080/health')\""
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --quiet anthropic || true   # best-effort; test script falls back to urllib
+
+      - name: Wait for mock LLM server to be healthy
+        run: |
+          echo "Waiting for mock LLM server…"
+          for i in $(seq 1 20); do
+            curl -sf http://localhost:8080/health && break
+            echo "  attempt $i – not ready yet"
+            sleep 2
+          done
+          curl -sf http://localhost:8080/health || (echo "Server never became healthy" && exit 1)
+
+      - name: Run bad-pattern test suite against mock
+        env:
+          ANTHROPIC_BASE_URL: http://localhost:8080
+          OPENAI_BASE_URL: http://localhost:8080/v1
+          MOCK_LLM_URL: http://localhost:8080
+        run: |
+          python3 tests/behavioral/run_bad_patterns.py
+
+      - name: Run behavioral report
+        env:
+          MOCK_LLM_URL: http://localhost:8080
+          SARIF_OUTPUT: behavioral-findings.sarif
+        run: |
+          # Grab the behavioral-report.py from the cost repo mock-server.
+          # In practice teams would pin to a released version; here we fetch main.
+          curl -sSL \
+            https://raw.githubusercontent.com/nroan117/cost/main/mock-server/behavioral-report.py \
+            -o behavioral-report.py
+          python3 behavioral-report.py
+        continue-on-error: true   # we assert findings below; don't hard-fail here
+
+      - name: Upload SARIF to GitHub Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: behavioral-findings.sarif
+        continue-on-error: true   # SARIF upload optional — don't block on it
+
+      - name: Assert at least 2 findings detected
+        run: |
+          python3 - <<'EOF'
+          import json, sys
+
+          try:
+              with open("behavioral-findings.sarif") as f:
+                  sarif = json.load(f)
+          except FileNotFoundError:
+              print("ERROR: behavioral-findings.sarif not found — report did not run")
+              sys.exit(1)
+
+          runs = sarif.get("runs", [])
+          results = []
+          for run in runs:
+              results.extend(run.get("results", []))
+
+          count = len(results)
+          print(f"Findings: {count}")
+          for r in results:
+              level = r.get("level", "?")
+              rule = r.get("ruleId", "?")
+              msg = r.get("message", {}).get("text", "")
+              print(f"  [{level.upper()}] {rule}: {msg[:80]}")
+
+          if count < 2:
+              print(f"\nFAIL: expected >= 2 findings, got {count}.")
+              print("This likely means the bad-pattern script did not generate enough signal.")
+              sys.exit(1)
+
+          print(f"\nPASS: {count} finding(s) detected — behavioral detectors are working.")
+          EOF

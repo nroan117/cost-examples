@@ -25,6 +25,19 @@ The `fixes/` branch contains the same app with all vulnerabilities remediated (0
 
 ---
 
+## New Rules (v0.4.0)
+
+Two new rules added in v0.4.0:
+
+| Rule | Description |
+|------|-------------|
+| `anthropic-missing-cache-control` | Detects Anthropic `messages.create()` calls where `system` is a plain string instead of a list with `cache_control` — missing prompt caching increases token costs on claude models |
+| `a2a-missing-message-budget` | Detects `autogen.GroupChat` instantiated without `max_round` — unbounded agent-to-agent message loops can cause runaway costs |
+
+Fixtures for both rules live in `tests/should_trigger/` and `tests/should_not_trigger/`.
+
+---
+
 ## Test Suite
 
 The `tests/` directory contains rule-precision test cases:

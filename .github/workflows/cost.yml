@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: nroan117/cost
-          ref: v0.5.2
+          ref: v0.6.0
           token: ${{ secrets.COST_REPO_TOKEN }}
           path: .cost-action
 
@@ -34,6 +34,7 @@ jobs:
         uses: ./.cost-action/action
         with:
           org_api_key: ${{ secrets.COST_API_KEY }}
+          daily_call_volume: '100'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           enforcement_mode: enforce-on-critical
           exclude_paths: tests scripts
@@ -59,7 +60,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: nroan117/cost
-          ref: v0.5.2
+          ref: v0.6.0
           token: ${{ secrets.COST_REPO_TOKEN }}
           path: .cost-action
 
@@ -67,6 +68,7 @@ jobs:
         uses: ./.cost-action/action
         with:
           org_api_key: ${{ secrets.COST_API_KEY }}
+          daily_call_volume: '100'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           enforcement_mode: warn-only
           include_paths: tests/should_trigger
@@ -92,7 +94,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: nroan117/cost
-          ref: v0.5.2
+          ref: v0.6.0
           token: ${{ secrets.COST_REPO_TOKEN }}
           path: .cost-action
 
@@ -100,6 +102,7 @@ jobs:
         uses: ./.cost-action/action
         with:
           org_api_key: ${{ secrets.COST_API_KEY }}
+          daily_call_volume: '100'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           enforcement_mode: enforce-on-critical
           include_paths: tests/should_not_trigger

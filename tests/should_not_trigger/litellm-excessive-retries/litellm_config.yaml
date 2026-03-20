@@ -1,0 +1,8 @@
+model_list:
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+
+router_settings:
+  num_retries: 3
+  fallback_models: ["gpt-3.5-turbo"]

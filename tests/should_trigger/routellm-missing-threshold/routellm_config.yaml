@@ -1,0 +1,3 @@
+strong_model: gpt-4o
+weak_model: gpt-3.5-turbo
+router: mf

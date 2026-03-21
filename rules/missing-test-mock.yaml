@@ -1,0 +1,41 @@
+rules:
+  - id: missing-test-mock
+    patterns:
+      - pattern-either:
+          - pattern: |
+              def $TEST_FUNC(...):
+                  ...
+                  $CLIENT.completions.create(...)
+                  ...
+          - pattern: |
+              def $TEST_FUNC(...):
+                  ...
+                  $CLIENT.messages.create(...)
+                  ...
+      - pattern-not: |
+          @patch(...)
+          def $TEST_FUNC(...):
+              ...
+      - pattern-not: |
+          @mock.patch(...)
+          def $TEST_FUNC(...):
+              ...
+      - pattern-not: |
+          @pytest.fixture
+          def $TEST_FUNC(...):
+              ...
+    message: "Live LLM SDK call in test function without mock/patch. Tests hitting live APIs add cost, latency, and flakiness. Use unittest.mock.patch or pytest-mock to mock the client."
+    severity: WARNING
+    languages: [python]
+    paths:
+      include:
+        - "test_*.py"
+        - "*_test.py"
+        - "conftest.py"
+        - "**/test_*.py"
+        - "**/*_test.py"
+    metadata:
+      category: dev_test_waste
+      severity: medium
+      confidence: medium
+      enforcement: warn

@@ -1,0 +1,18 @@
+rules:
+  - id: autogen-unbounded-history
+    patterns:
+      - pattern-either:
+          - pattern: ConversableAgent(...)
+          - pattern: AssistantAgent(...)
+          - pattern: UserProxyAgent(...)
+      - pattern-not: ConversableAgent(..., max_consecutive_auto_reply=..., ...)
+      - pattern-not: AssistantAgent(..., max_consecutive_auto_reply=..., ...)
+      - pattern-not: UserProxyAgent(..., max_consecutive_auto_reply=..., ...)
+    message: "AutoGen agent instantiated without max_consecutive_auto_reply. Unbounded auto-reply can cause runaway token spend — agents will keep responding until context limit or timeout. Set max_consecutive_auto_reply=10 or a suitable hard limit."
+    severity: ERROR
+    languages: [python]
+    metadata:
+      category: framework_traps
+      severity: high
+      confidence: high
+      enforcement: block

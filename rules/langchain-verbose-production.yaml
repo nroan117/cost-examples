@@ -1,0 +1,19 @@
+rules:
+  - id: langchain-verbose-production
+    patterns:
+      - pattern-either:
+          - pattern: AgentExecutor(..., verbose=True, ...)
+          - pattern: LLMChain(..., verbose=True, ...)
+          - pattern: ConversationalRetrievalChain(..., verbose=True, ...)
+          - pattern: RetrievalQA(..., verbose=True, ...)
+          - pattern: ConversationChain(..., verbose=True, ...)
+          - pattern: $CHAIN.from_llm(..., verbose=True, ...)
+          - pattern: $CHAIN.from_chain_type(..., verbose=True, ...)
+    message: "LangChain chain/agent initialized with verbose=True. In production, this dumps full chain traces, inflating logs and processing overhead. Remove verbose=True or gate it behind os.getenv('DEBUG')."
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: framework_traps
+      severity: low
+      confidence: high
+      enforcement: warn

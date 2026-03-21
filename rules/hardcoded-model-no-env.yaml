@@ -1,0 +1,27 @@
+rules:
+  - id: hardcoded-model-no-env
+    patterns:
+      - pattern-either:
+          - pattern: $FUNC(..., model="gpt-4o", ...)
+          - pattern: $FUNC(..., model="gpt-4", ...)
+          - pattern: $FUNC(..., model="claude-3-5-sonnet-20241022", ...)
+          - pattern: $FUNC(..., model="claude-3-5-sonnet-20240620", ...)
+          - pattern: $FUNC(..., model="claude-opus-4-5", ...)
+          - pattern: $FUNC(..., model="claude-opus-4", ...)
+          - pattern: $FUNC(..., model="claude-3-opus-20240229", ...)
+    message: "Expensive frontier model hardcoded as string literal with no env-var routing. Every call uses the same model regardless of task complexity. Use os.getenv('LLM_MODEL', 'gpt-4o-mini') or a model router to reduce costs on simpler tasks."
+    severity: WARNING
+    languages: [python]
+    paths:
+      exclude:
+        - "test_*.py"
+        - "*_test.py"
+        - "conftest.py"
+        - "**/test_*.py"
+        - "**/*_test.py"
+        - "tests/**"
+    metadata:
+      category: dev_test_waste
+      severity: medium
+      confidence: medium
+      enforcement: warn

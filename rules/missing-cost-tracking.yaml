@@ -1,0 +1,24 @@
+rules:
+  - id: missing-cost-tracking
+    patterns:
+      - pattern: $CLIENT.chat.completions.create(...)
+      - pattern-not: $CLIENT.chat.completions.create(..., callbacks=..., ...)
+      - pattern-not: $CLIENT.chat.completions.create(..., extra_headers=..., ...)
+    message: >
+      LLM API call with no observability instrumentation detected (no callbacks= or extra_headers= for cost
+      proxy). Without observability you cannot track, alert on, or optimize LLM costs.
+      Add LangFuse (callbacks=[LangfuseCallbackHandler()]) or route via Helicone (extra_headers=).
+    severity: WARNING
+    languages: [python]
+    paths:
+      exclude:
+        - "test_*.py"
+        - "*_test.py"
+        - "conftest.py"
+        - "tests/**"
+        - "**/test_*.py"
+    metadata:
+      category: framework_traps
+      severity: low
+      confidence: experimental
+      enforcement: warn

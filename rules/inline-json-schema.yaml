@@ -1,0 +1,17 @@
+rules:
+  - id: inline-json-schema
+    patterns:
+      - pattern: |
+          $CLIENT.chat.completions.create(..., messages=[..., {"role": $ROLE, "content": $CONTENT}, ...], ...)
+      - pattern-not: $CLIENT.chat.completions.create(..., response_format=..., ...)
+      - metavariable-regex:
+          metavariable: $CONTENT
+          regex: '.*"properties".*"required".*'
+    message: "JSON schema injected as inline prompt text without using the native structured output API. Injecting schemas adds 200-1000 tokens per call. Use response_format={\"type\": \"json_schema\", \"json_schema\": {...}} for more efficient structured outputs."
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: prompt_engineering
+      severity: medium
+      confidence: medium
+      enforcement: warn

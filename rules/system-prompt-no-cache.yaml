@@ -1,0 +1,12 @@
+rules:
+  - id: system-prompt-no-cache
+    patterns:
+      - pattern: $CLIENT.messages.create(..., system="...", ...)
+    message: "Anthropic messages.create() with system prompt as plain string — cannot use prompt caching. Long system prompts re-sent on every call waste 50-80% of input token budget. Convert to system=[{\"type\": \"text\", \"text\": \"...\", \"cache_control\": {\"type\": \"ephemeral\"}}] to enable caching."
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: prompt_engineering
+      severity: high
+      confidence: medium
+      enforcement: warn

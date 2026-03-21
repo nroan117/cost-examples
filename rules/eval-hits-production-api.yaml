@@ -1,0 +1,21 @@
+rules:
+  - id: eval-hits-production-api
+    pattern: $CLIENT.chat.completions.create(...)
+    message: "Direct LLM API call in eval/benchmark file. Eval suites hitting the production API burn real token budget. Use mock LLM responses or a staging endpoint for eval runs."
+    severity: WARNING
+    languages: [python]
+    paths:
+      include:
+        - "eval_*.py"
+        - "*_eval.py"
+        - "benchmark_*.py"
+        - "*_benchmark.py"
+        - "**/eval_*.py"
+        - "**/*_eval.py"
+        - "**/benchmark_*.py"
+        - "**/*_benchmark.py"
+    metadata:
+      category: eval_pipeline
+      severity: medium
+      confidence: medium
+      enforcement: warn

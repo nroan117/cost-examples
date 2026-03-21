@@ -1,0 +1,27 @@
+rules:
+  - id: prod-model-in-test
+    patterns:
+      - pattern-either:
+          - pattern: $FUNC(..., model="gpt-4o", ...)
+          - pattern: $FUNC(..., model="gpt-4", ...)
+          - pattern: $FUNC(..., model="claude-3-5-sonnet", ...)
+          - pattern: $FUNC(..., model="claude-3-5-sonnet-20241022", ...)
+          - pattern: $FUNC(..., model="claude-opus-4-5", ...)
+          - pattern: $FUNC(..., model="claude-opus-4", ...)
+          - pattern: $FUNC(..., model="claude-3-opus-20240229", ...)
+    message: "Expensive frontier model hardcoded in test file. Test suites using production-tier models cost 10-50x more than gpt-4o-mini or mocked alternatives. Use model='gpt-4o-mini' or mock the LLM client."
+    severity: ERROR
+    languages: [python]
+    paths:
+      include:
+        - "test_*.py"
+        - "*_test.py"
+        - "conftest.py"
+        - "tests/**/*.py"
+        - "**/test_*.py"
+        - "**/*_test.py"
+    metadata:
+      category: dev_test_waste
+      severity: high
+      confidence: high
+      enforcement: block

@@ -1,0 +1,35 @@
+rules:
+  - id: llm-as-judge-frontier
+    patterns:
+      - pattern-either:
+          - pattern: |
+              def $FUNC(...):
+                  ...
+                  $CLIENT.chat.completions.create(..., model="gpt-4o", ...)
+                  ...
+          - pattern: |
+              def $FUNC(...):
+                  ...
+                  $CLIENT.chat.completions.create(..., model="gpt-4", ...)
+                  ...
+          - pattern: |
+              def $FUNC(...):
+                  ...
+                  $CLIENT.messages.create(..., model="claude-3-5-sonnet-20241022", ...)
+                  ...
+          - pattern: |
+              def $FUNC(...):
+                  ...
+                  $CLIENT.messages.create(..., model="claude-opus-4-5", ...)
+                  ...
+      - metavariable-regex:
+          metavariable: $FUNC
+          regex: ".*(judge|eval|score|grade|assess).*"
+    message: "Frontier model used in an eval/judge function. Using gpt-4o or claude-3-5-sonnet as judge on full eval suite costs 10-100x more than a cheaper judge. Use gpt-4o-mini or claude-haiku, or add sampling logic to judge only 10% of outputs."
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: eval_pipeline
+      severity: high
+      confidence: high
+      enforcement: warn

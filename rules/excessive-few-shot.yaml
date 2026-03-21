@@ -1,0 +1,15 @@
+rules:
+  - id: excessive-few-shot
+    patterns:
+      - pattern: |
+          $FUNC(..., messages=[
+            $M1, $M2, $M3, $M4, $M5, $M6, $M7, $M8, $M9, $M10, $M11, ...
+          ], ...)
+    message: "Excessive few-shot examples in messages array (10+ items). Each example adds 200-500 tokens per call. At scale, this adds significant cost. Reduce to 2-3 high-quality examples or use fine-tuning for high-frequency tasks."
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: prompt_engineering
+      severity: medium
+      confidence: medium
+      enforcement: warn

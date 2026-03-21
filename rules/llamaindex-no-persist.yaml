@@ -1,0 +1,17 @@
+rules:
+  - id: llamaindex-no-persist
+    patterns:
+      - pattern: VectorStoreIndex.from_documents(...)
+      - pattern-not: |
+          $INDEX = VectorStoreIndex.from_documents(...)
+          ...
+          $INDEX.storage_context.persist(...)
+      - pattern-not: VectorStoreIndex.from_documents(..., storage_context=..., ...)
+    message: "VectorStoreIndex.from_documents() called without persisting the index. Re-indexing on every run re-embeds all documents, wasting embedding costs. Call index.storage_context.persist(persist_dir='./storage') after building, and load from storage on subsequent runs."
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: framework_traps
+      severity: medium
+      confidence: medium
+      enforcement: warn

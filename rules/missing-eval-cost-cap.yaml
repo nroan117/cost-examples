@@ -1,0 +1,37 @@
+rules:
+  - id: missing-eval-cost-cap
+    patterns:
+      - pattern: |
+          for $ITEM in $DATASET:
+              ...
+              $CLIENT.chat.completions.create(...)
+              ...
+      - pattern-not: |
+          for $ITEM in $DATASET:
+              ...
+              if ...:
+                  break
+              ...
+      - pattern-not: |
+          for $ITEM in $DATASET:
+              ...
+              break
+              ...
+    message: "Eval loop over dataset with LLM API calls and no cost cap or early-exit condition. If the dataset grows or a bug occurs, this can silently exceed budget. Add a max_samples limit or a budget check: 'if total_cost > MAX_EVAL_BUDGET: break'."
+    severity: WARNING
+    languages: [python]
+    paths:
+      include:
+        - "eval_*.py"
+        - "*_eval.py"
+        - "benchmark_*.py"
+        - "*_benchmark.py"
+        - "**/eval_*.py"
+        - "**/*_eval.py"
+        - "**/benchmark_*.py"
+        - "**/*_benchmark.py"
+    metadata:
+      category: eval_pipeline
+      severity: medium
+      confidence: medium
+      enforcement: warn

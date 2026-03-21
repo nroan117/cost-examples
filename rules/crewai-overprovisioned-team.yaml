@@ -1,0 +1,12 @@
+rules:
+  - id: crewai-overprovisioned-team
+    patterns:
+      - pattern: Crew(..., agents=[$A1, $A2, $A3, $A4, ...], ...)
+    message: "CrewAI Crew initialized with 4+ agents. Each agent makes independent LLM calls, multiplying your spend. Use a single agent with tools for simple tasks; reserve multi-agent crews for genuinely parallel workflows."
+    severity: WARNING
+    languages: [python]
+    metadata:
+      category: framework_traps
+      severity: medium
+      confidence: medium
+      enforcement: warn

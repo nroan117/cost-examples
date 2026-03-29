@@ -26,7 +26,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: nroan117/cost
-          ref: v0.7.0
+<<<<<<< HEAD
+          ref: v0.7.2
+=======
+          ref: v0.7.2
+>>>>>>> 6a8f09c (chore: bump cost action ref to v0.7.2)
           token: ${{ secrets.COST_REPO_TOKEN }}
           path: .cost-action
 
@@ -60,7 +64,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: nroan117/cost
-          ref: v0.7.0
+<<<<<<< HEAD
+          ref: v0.7.2
+=======
+          ref: v0.7.2
+>>>>>>> 6a8f09c (chore: bump cost action ref to v0.7.2)
           token: ${{ secrets.COST_REPO_TOKEN }}
           path: .cost-action
 
@@ -94,7 +102,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: nroan117/cost
-          ref: v0.7.0
+<<<<<<< HEAD
+          ref: v0.7.2
+=======
+          ref: v0.7.2
+>>>>>>> 6a8f09c (chore: bump cost action ref to v0.7.2)
           token: ${{ secrets.COST_REPO_TOKEN }}
           path: .cost-action
 
